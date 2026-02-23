@@ -325,8 +325,8 @@ def main():
                 unsafe_allow_html=True
             )
 
-        # =========================================================
-        # 🧭 REVIEW PLANNER (FIXED CLEAN OUTPUT)
+               # =========================================================
+        # 🧭 REVIEW PLANNER
         # =========================================================
         with tab5:
             plan = st.session_state.planner
@@ -336,26 +336,49 @@ def main():
                 unsafe_allow_html=True
             )
 
-            checklist = plan.get("review_checklist", [])
+            # Handle multiple possible return formats
+            if isinstance(plan, dict):
+                checklist = (
+                    plan.get("review_checklist")
+                    or plan.get("checklist")
+                    or plan.get("tasks")
+                    or []
+                )
+            elif isinstance(plan, list):
+                checklist = plan
+            else:
+                checklist = []
 
             if not checklist:
-                st.info("No checklist generated")
+                st.warning("Planner returned empty structure.")
+                st.write("DEBUG OUTPUT:", plan)
             else:
-                for item in checklist:
+                for idx, item in enumerate(checklist, start=1):
 
                     if isinstance(item, dict):
-                        area = item.get("area","Review")
-                        check = item.get("check","")
+                        area = (
+                            item.get("area")
+                            or item.get("title")
+                            or item.get("section")
+                            or f"Section {idx}"
+                        )
+
+                        check = (
+                            item.get("check")
+                            or item.get("description")
+                            or item.get("action")
+                            or item.get("task")
+                            or str(item)
+                        )
                     else:
-                        area = "Review"
+                        area = f"Section {idx}"
                         check = str(item)
 
                     st.markdown(f"""
                     <div class='planner'>
-                        <b>📌 {area}</b><br>
+                        <b>{idx}. 📌 {area}</b><br>
                         <span style='color:#cbd5e1'>✔ {check}</span>
                     </div>
                     """, unsafe_allow_html=True)
-
 if __name__ == "__main__":
     main()
