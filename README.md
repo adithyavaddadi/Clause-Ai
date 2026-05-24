@@ -10,6 +10,37 @@ ClauseAI is an **enterprise-grade multi-agent RAG system** designed to revolutio
 
 ---
 
+## 📷 Application Demo
+
+### Homepage & Upload Interface
+![Homepage](Demo/Homepage.png)
+![Homepage Setup](Demo/Homepage(1).png)
+
+### Multi-Agent Analysis Dashboard
+![Results Output](Demo/Result.png)
+![Executive Summary Report](Demo/summary.png)
+
+### Auditing Agents Risk Output
+* **Legal Clause Analysis:**
+  ![Legal Agent Output](Demo/legal_agent.png)
+* **Financial Risk Analysis:**
+  ![Finance Agent Output](Demo/finance_agents.png)
+* **Regulatory Compliance Check:**
+  ![Compliance Agent Output](Demo/compliance_agent.png)
+
+### Conversational RAG & Automated Reporting
+* **Interactive AI Assistant:**
+  ![Query Tab Interface](Demo/Query_tab.png)
+* **High-Fidelity PDF Export:**
+  ![Final Automated Report](Demo/Final_report(1).png)
+  ![Final Summary Page](Demo/Final_report(2).png)
+
+### Review & Action Planner
+![Smart Review Checklist](Demo/review_planner.png)
+![Action Items Detail](Demo/review_planner%20(2).png)
+
+---
+
 ## 🚀 Key Features
 
 *   **⚡ Parallel Multi-Agent Intelligence**: Runs specialized analysis agents (**Legal**, **Finance**, **Compliance**, **Operations**, and **Executive Summary**) in parallel via a thread-safe executor.
