@@ -1,278 +1,205 @@
-![Python](https://img.shields.io/badge/python-3.10-blue)
-![AI](https://img.shields.io/badge/AI-Multi--Agent-green)
-![Status](https://img.shields.io/badge/status-under%20development-yellow)
-
 # ⚖️ ClauseAI – AI Legal Contract Analyzer
 
-ClauseAI is an AI-powered legal contract analysis system that helps users understand complex legal agreements by automatically extracting clauses, identifying risks, and generating summaries using Natural Language Processing (NLP) and machine learning techniques.
+[![Python Version](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Streamlit UI](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Multi-Agent Orchestration](https://img.shields.io/badge/Architecture-Multi--Agent-6f42c1?style=for-the-badge&logo=langchain&logoColor=white)]()
+[![Pinecone Vector Store](https://img.shields.io/badge/Vector%20Store-Pinecone-06B6D4?style=for-the-badge&logo=pinecone&logoColor=white)](https://pinecone.io)
+[![Fast LLM Inference](https://img.shields.io/badge/LLM-Groq%20%7C%20Ollama-f55442?style=for-the-badge&logo=groq&logoColor=white)]()
 
-The system provides an interactive dashboard where users can upload contracts and receive structured insights about important legal clauses, compliance issues, and potential risks.
-
----
-
-# 🚀 Features
-
-- 📄 Automatic clause extraction from legal contracts
-- ⚠️ Risk detection and compliance analysis
-- 🧠 AI-powered contract summarization
-- 🔍 Named Entity Recognition (NER) for legal entities
-- 📊 Multi-agent contract analysis system
-- 💻 Interactive Streamlit dashboard
-- 📑 Automated final report generation
+ClauseAI is an **enterprise-grade multi-agent RAG system** designed to revolutionize contract analysis and intelligence. Powered by custom LLM-based agents, parallel executors, heuristic checks, and advanced NLP parsers, ClauseAI converts dense and obscure legal agreements into clean, structured, and actionable dashboards.
 
 ---
 
-# 📷 Application Demo
+## 🚀 Key Features
 
-### Homepage
-![Homepage](Demo/Homepage.png)
-![Homepage](Demo/Homepage(1).png)
-
-### Analysis Results Output
-![Results](Demo/Result.png)
-
-### Contract Summary
-![Summary](Demo/summary.png)
-
-### Agents Analysis Report
-
-#### Legal Clause Analysis
-![Legal Agent](Demo/legal_agent.png)
-
-#### Finance Clause Analysis
-![Finance Agent](Demo/finance_agents.png)
-
-#### Compliance Check
-![Compliance](Demo/compliance_agent.png)
-
-### Query Interface
-![Query](Demo/Query_tab.png)
-
-### Final Report
-![Final Report](Demo/Final_report(1).png)
-![Final Report](Demo/Final_report(2).png)
-
-### Review Planner
-![Planner](Demo/review_planner.png)
-![Planner](Demo/review_planner(2).png)
+*   **⚡ Parallel Multi-Agent Intelligence**: Runs specialized analysis agents (**Legal**, **Finance**, **Compliance**, **Operations**, and **Executive Summary**) in parallel via a thread-safe executor.
+*   **🧠 Hybrid Cloud/Local LLM Routing**: Leverages high-performance cloud inference (**Groq / Llama-3.1**) with seamless fallback to secure local offline execution (**Ollama / Phi-3 / Llama-3.2**).
+*   **🧭 Smart Contract Review Planner**: Autogenerates a strategic checklist, focus questions, estimated review times, and assigns risk levels for legal auditors.
+*   **🛡️ Multi-Tier Heuristic Risk Engine**: Computes precise risk ratings (0–100%) by correlating keyword densities, negation states, and structural anomalies.
+*   **📑 Premium Automated PDF Exporter**: Builds and delivers high-fidelity, client-ready contract intelligence PDF summaries directly from the dashboard.
+*   **💬 Interactive Conversational RAG**: Allows auditors to grill their contracts interactively with questions via an integrated hybrid LLM chat assistant.
 
 ---
 
-# 🧠 How ClauseAI Works
+## 🧠 System Architecture
 
-1. The user uploads a legal contract through the Streamlit interface.
-2. The system preprocesses the document using NLP techniques.
-3. Named Entity Recognition identifies important legal entities.
-4. Multiple AI agents analyze different aspects of the contract:
-   - Legal clause extraction
-   - Financial clause analysis
-   - Compliance verification
-5. The system generates summaries and identifies potential risks.
-6. A structured final report is generated and displayed in the dashboard.
+ClauseAI orchestrates specialized analytical layers concurrently to provide thorough, multi-dimensional auditing. Below is the intelligence routing and decision flow:
+
+```mermaid
+graph TD
+    A[📄 Legal Contract Document] --> B[🔧 Universal Chunker & Universal Loader]
+    B --> C[🏷️ Contract Classifier]
+    C --> D{Parallel Agent Executor}
+    
+    subgraph Multi-Agent Audit Grid
+        D -->|⚖️ Legal Analyst| E1[Legal Risk Agent]
+        D -->|💰 Financial Auditor| E2[Finance Agent]
+        D -->|🛡️ Regulatory Compliance| E3[Compliance Agent]
+        D -->|⚙️ Workflow Operations| E4[Operations Agent]
+    end
+
+    E1 --> F[🧠 Heuristic Risk Evaluator]
+    E2 --> F
+    E3 --> F
+    E4 --> F
+    
+    F --> G[👑 Chief Executive Summary Agent]
+    G --> H[🧭 Smart Review Planner]
+    H --> I[📊 Executive Streamlit Dashboard]
+    I --> J[📑 High-Fidelity PDF Export]
+    I --> K[💬 Conversational RAG Chat]
+```
 
 ---
 
-# 🧠 System Architecture
+## 📁 Repository Structure
 
-ClauseAI uses a **multi-agent pipeline architecture**.
-
-The contract passes through several stages:
+The modular workspace separation guarantees complete encapsulation:
 
 ```text
-Contract
-   ↓
-Text Loader
-   ↓
-Chunker
-   ↓
-Classifier
-   ↓
-Agents
-   ↓
-Risk Analyzer
-   ↓
-Report Generator
-
-Agents specialize in different analysis tasks.
-
-The main agents include:
-
-Legal Agent
-
-Finance Agent
-
-Compliance Agent
-
-Operations Agent
-
-Summary Agent
-
-🛠 Tech Stack
-Programming Language
-
-Python
-
-Libraries & Frameworks
-
-spaCy (Natural Language Processing)
-
-Streamlit (Web Interface)
-
-Pandas
-
-NumPy
-
-Tools
-
-Git
-
-GitHub
-
-📂 Project Structure
-ClauseAI
+ClauseAI/
 │
-├── agents
-│   ├── clause_analyzer.py
-│   ├── contract_classifier.py
-│   ├── executor_agent.py
-│   ├── report_generator.py
-│   └── review_planner.py
+├── agents/                       # Orchestration and Parsing Agents
+│   ├── clause_analyzer.py        # Individual clause segment risk parsing
+│   ├── contract_classifier.py    # Multi-class agreement type categorizer
+│   ├── executor_agent.py         # Concurrently boots and monitors agents
+│   ├── report_generator.py       # Aggregates structured responses
+│   └── review_planner.py         # Autogenerates audit questions and timings
 │
-├── agents_llm
-│   ├── classifier_agent.py
-│   ├── compliance_agent.py
-│   ├── finance_agent.py
-│   ├── legal_agent.py
-│   ├── operations_agent.py
-│   └── summary_agent.py
+├── agents_llm/                   # LLM Prompt Engineering & Core Prompts
+│   ├── classifier_agent.py       # Cloud-based semantic contract categorizer
+│   ├── compliance_agent.py       # Regulatory, GDPR, and data protection agent
+│   ├── finance_agent.py          # Liquidated damages, payment schedules agent
+│   ├── legal_agent.py            # Liability cap, jurisdiction, and indemnity agent
+│   ├── operations_agent.py       # SLA, timelines, and execution risk agent
+│   └── summary_agent.py          # Formulates the master executive summary
 │
-├── memory
-│   ├── memory.py
-│   └── pinecone_memory.py
+├── memory/                       # Historical State Management
+│   ├── memory.py                 # Thread-safe in-memory session manager
+│   └── pinecone_memory.py        # Semantic Pinecone vector store memory
 │
-├── report
-│   ├── final_report.py
-│   └── final_report_utils.py
+├── report/                       # Document Generation Assets
+│   ├── final_report.py           # Primary report rendering pipelines
+│   └── final_report_utils.py     # Regex and text-cleansing helpers
 │
-├── utils
-│   ├── ai_flow_explainer.py
-│   ├── chunker.py
-│   ├── duplicate_checker.py
-│   ├── file_loader.py
-│   ├── history_manager.py
-│   ├── hybrid_llm.py
-│   ├── local_llm.py
-│   ├── ollama_engine.py
-│   ├── parallel_runner.py
-│   ├── pdf_loader.py
-│   ├── risk_formatter.py
-│   ├── risk_graph.py
-│   ├── risk_heuristic.py
-│   ├── risk_score.py
-│   ├── text_loader.py
-│   └── token_guard.py
+├── utils/                        # System Engineering Utilities
+│   ├── ai_flow_explainer.py      # CSS-animated dashboard reasoning logs
+│   ├── chunker.py                # Paragraph and sentence sliding parser
+│   ├── file_loader.py            # Universal loader for PDF, DOCX, TXT, and Web URLs
+│   ├── history_manager.py        # Local contract tracking database
+│   ├── hybrid_llm.py             # Groq API and local Ollama routing controller
+│   ├── local_llm.py              # Ollama API client engine
+│   ├── ollama_engine.py          # Optional thread-safe offline controller
+│   ├── pdf_loader.py             # PyPDF2 and pdfplumber extraction adapter
+│   ├── risk_score.py             # Heuristic formula and keyword scoring
+│   ├── risk_heuristic.py         # Advanced multi-tier risk analyzer
+│   └── token_guard.py            # Token counter and automatic prompt trimmer
 │
-├── vectorstore
-│   └── pinecone_client.py
+├── vectorstore/                  # Long-term semantic indexing
+│   └── pinecone_client.py        # Pinecone RAG database vector adapter
 │
-├── scripts
-│   ├── check_env.py
-│   └── check_key.py
+├── scripts/                      # Admin & Diagnostic Scripts
+│   ├── check_env.py              # Performs full verification check
+│   └── check_key.py              # Masked config key test suite
 │
-├── tests
-│   ├── test_chunking.py
-│   ├── test_classifier.py
-│   ├── test_clause_analyzer.py
-│   ├── test_compliance.py
-│   ├── test_executor.py
-│   ├── test_full_pipeline.py
-│   ├── test_grok.py
-│   ├── test_pinecone.py
-│   ├── test_report.py
-│   └── test_review_planner.py
+├── tests/                        # Full Pytest Suite (11+ unit tests)
+│   ├── test_chunking.py          # Sentence-sliding validations
+│   ├── test_full_pipeline.py     # End-to-end multi-agent system test
+│   └── test_review_planner.py    # Verification planner validation
 │
-├── Demo
-│   └── (project screenshots)
-│
-├── streamlit_app.py
-├── contract_history.json
-├── LICENSE
-└── README.md
+├── streamlit_app.py              # Interactive Front-end Web Dashboard
+├── requirements.txt              # Standard system dependency specifications
+└── LICENSE                       # MIT License
+```
 
-▶️ Installation
-Clone the repository
+---
 
-git clone https://github.com/adithyavaddadi/ClauseAI.git
-cd ClauseAI
-I
-nstall dependencies
+## 🛠️ Tech Stack & Dependencies
+
+ClauseAI is built using high-performance libraries to maintain minimal resource utilization while offering maximal output accuracy:
+
+*   **Web Dashboard**: Streamlit (Advanced dark premium layout, custom HSL styling, and dynamic CSS animations)
+*   **Orchestration & Parallelism**: LangGraph & Concurrent ThreadPoolExecutor
+*   **Natural Language Processing**: spaCy (Semantic clause boundaries & NER models)
+*   **Document Loading**: PyPDF2, pdfplumber, python-docx, and BeautifulSoup4
+*   **Report Generation**: ReportLab (High-fidelity, customized canvas PDF building)
+*   **Inference & RAG Storage**: Groq Cloud SDK, Ollama Local API, and Pinecone Vector Client
+
+---
+
+## 📦 Setup & Installation Instructions
+
+Follow this seamless workflow to set up and initiate ClauseAI locally:
+
+### 1. Pre-requisites
+*   **Python**: Version `3.10` or higher.
+*   **Ollama (Optional for offline execution)**: Download and launch from [ollama.com](https://ollama.com). Pull models via terminal:
+    ```bash
+    ollama pull phi3:mini
+    ```
+
+### 2. Install Project Dependencies
+Clone the repository and install the locked versions from the `requirements.txt`:
+```bash
+# Clone the repository
+git clone https://github.com/adithyavaddadi/Clause-Ai.git
+cd Clause-Ai
+
+# Create virtual environment
+python -m venv .venv
+.venv\Scripts\activate  # On macOS/Linux: source .venv/bin/activate
+
+# Install requirements
 pip install -r requirements.txt
+```
 
-Run the application
+### 3. Setup Configuration `.env`
+Create a `.env` file in the root workspace directory with the following variables:
+```env
+# Cloud API Keys
+GROQ_API_KEY=your_gsk_api_key_here
+GROQ_MODEL=llama-3.1-8b-instant
+
+# Vector memory (Optional)
+PINECONE_API_KEY=your_pinecone_api_key_here
+
+# Local Offline Execution (Optional Fallback)
+OLLAMA_URL=http://127.0.0.1:11434/api/generate
+OLLAMA_MODEL=phi3:mini
+```
+
+---
+
+## 🧪 Verification & Execution
+
+### 1. Perform a Diagnostics Verification
+Ensure the environment, directories, and keys are properly mapped before launching:
+```bash
+python scripts/check_env.py
+```
+
+### 2. Launch the Streamlit Web Application
+Spin up the highly premium Dark-themed contract analyzer UI:
+```bash
 streamlit run streamlit_app.py
+```
+Open [http://localhost:8501](http://localhost:8501) in your browser.
 
-Open in browser
-http://localhost:8501
-
-🧪 Running Tests
+### 3. Run the Automated Test Suite
+To verify core logic, parser chunks, and LLM classifiers remain bug-free:
+```bash
 pytest tests/
+```
 
+---
 
-🚧 Development Status
+## 👨‍💻 Author Info & Links
 
-ClauseAI is currently under active development.
+**Adithya Vaddadi**  
+*B.Tech in Artificial Intelligence & Machine Learning*
 
-The core AI pipeline and multi-agent contract analysis system are implemented. Current development is focused on improving the user interface and enhancing the user experience.
+*   **GitHub**: [@adithyavaddadi](https://github.com/adithyavaddadi)
+*   **LinkedIn**: [Adithya Vaddadi Profile](https://linkedin.com/in/adithya-vaddadi-536176330)
 
-Current Work:
-
-Improving Streamlit dashboard layout
-
-Enhancing visualization of clause analysis results
-
-Better display of risk scores and compliance insights
-
-Adding interactive contract query features
-
-Improving report visualization
-
-Planned UI Improvements
-
-Better dashboard layout and navigation
-
-Visual risk indicators and graphs
-
-Contract clause highlighting
-
-Interactive analysis panels
-
-Improved report download interface
-
-🎯 Project Objective
-
-Legal contracts are complex and require careful review. ClauseAI aims to simplify contract understanding by using AI agents that analyze documents, detect risks, and generate structured insights.
-
-This system demonstrates how multi-agent AI architectures can assist legal and compliance workflows.
-
-🔮 Future Improvements
-
-LLM-based clause reasoning
-
-Contract comparison system
-
-Knowledge graph for contracts
-
-Cloud deployment
-
-Real-time collaborative review
-
-👨‍💻 Author
-
-Adithya Vaddadi
-B.Tech – Artificial Intelligence & Machine Learning
-
-GitHub
-https://github.com/adithyavaddadi
-
-LinkedIn
-https://linkedin.com/in/adithya-vaddadi-536176330
+---
+*Developed with ❤️ as a Multi-Agent Legal Intelligence Framework.*

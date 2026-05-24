@@ -1,9 +1,9 @@
 """
-CLAUSE AI — HYBRID LLM ENGINE
-Priority:
-1️⃣ GROQ (cloud fast)
-2️⃣ OLLAMA (local fallback)
-3️⃣ Safe fallback
+CLAUSE AI — HYBRID LLM ROUTING ENGINE
+Manages automatic failover between:
+1️⃣ GROQ (high performance cloud LLM)
+2️⃣ OLLAMA (secure offline local LLM)
+3️⃣ Deterministic static fallback report
 """
 
 import os
@@ -16,7 +16,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # =========================================================
-# 🔵 GROQ SETTINGS (PRIMARY)
+# 🔵 GROQ SETTINGS (PRIMARY HIGH-SPEED CLOUD)
 # =========================================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY") or os.getenv("GSK_API_KEY")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
@@ -24,21 +24,31 @@ GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_TIMEOUT = 60
 
 # =========================================================
-# 🟢 OLLAMA SETTINGS (LOCAL FALLBACK)
+# 🟢 OLLAMA SETTINGS (LOCAL OFFLINE SECURE ROUTING)
 # =========================================================
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "phi3:mini")
 OLLAMA_TIMEOUT = 120
 
-_last_local_call = 0
+_last_local_call = 0.0
+
 
 # =========================================================
-# 🔵 GROQ CALL
+# 🔵 GROQ API CALL
 # =========================================================
-def call_groq(prompt: str, temperature: float = 0.2, max_tokens: int = 800):
-
+def call_groq(prompt: str, temperature: float = 0.2, max_tokens: int = 800) -> str | None:
+    """Invokes the Groq cloud endpoint for inference.
+    
+    Args:
+        prompt (str): Text prompt to run analysis on.
+        temperature (float): Controls sampling randomness (default: 0.2).
+        max_tokens (int): Maximum output tokens (default: 800).
+        
+    Returns:
+        str | None: Decoded inference text on success, or None on failure.
+    """
     if not GROQ_API_KEY:
-        logger.warning("❌ GROQ API key missing")
+        logger.warning("❌ GROQ API key missing in environment variables.")
         return None
 
     headers = {
@@ -60,36 +70,43 @@ def call_groq(prompt: str, temperature: float = 0.2, max_tokens: int = 800):
         r = requests.post(GROQ_URL, headers=headers, json=payload, timeout=GROQ_TIMEOUT)
 
         if r.status_code != 200:
-            logger.warning(f"GROQ error {r.status_code}: {r.text}")
+            logger.warning(f"GROQ returned status code {r.status_code}: {r.text}")
             return None
 
         data = r.json()
 
-        # safe parse
         if "choices" not in data:
-            logger.warning(f"GROQ invalid response: {data}")
+            logger.warning(f"GROQ invalid response payload: {data}")
             return None
 
         return data["choices"][0]["message"]["content"].strip()
 
     except Exception as e:
-        logger.error(f"GROQ failed: {e}")
+        logger.error(f"GROQ connection failed: {e}")
         return None
 
 
 # =========================================================
 # 🟢 OLLAMA LOCAL CALL
 # =========================================================
-def call_ollama(prompt: str):
-
+def call_ollama(prompt: str) -> str | None:
+    """Invokes local secure offline model using Ollama REST API.
+    
+    Args:
+        prompt (str): Text prompt to run offline analysis on.
+        
+    Returns:
+        str | None: Offline inference response on success, or None on failure.
+    """
     global _last_local_call
 
     if not prompt:
         return None
 
-    # prevent overload
-    if time.time() - _last_local_call < 1.2:
-        time.sleep(1.2)
+    # Throttling to prevent overloading the local system
+    elapsed = time.time() - _last_local_call
+    if elapsed < 1.2:
+        time.sleep(1.2 - elapsed)
 
     _last_local_call = time.time()
 
@@ -98,20 +115,20 @@ def call_ollama(prompt: str):
             OLLAMA_URL,
             json={
                 "model": OLLAMA_MODEL,
-                "prompt": prompt[:2000],
+                "prompt": prompt[:2000],  # Clamp prompt to fit typical small local contexts
                 "stream": False,
             },
             timeout=OLLAMA_TIMEOUT,
         )
 
         if r.status_code != 200:
-            logger.warning(f"Ollama status {r.status_code}")
+            logger.warning(f"Ollama local service returned status code {r.status_code}")
             return None
 
         return r.json().get("response", "").strip()
 
     except Exception as e:
-        logger.warning(f"Ollama failed: {e}")
+        logger.warning(f"Ollama local connection failed: {e}")
         return None
 
 
@@ -119,35 +136,34 @@ def call_ollama(prompt: str):
 # 🧠 MASTER HYBRID ROUTER
 # =========================================================
 def call_hybrid_llm(prompt: str, role: str = "analysis") -> str:
+    """Routes prompt to the best available LLM provider using an active fallback strategy.
+    
+    Args:
+        prompt (str): Text prompt to route and execute.
+        role (str): Contextual role ("analysis", "summary", "report").
+        
+    Returns:
+        str: Analyzed response text from either cloud, local, or static fallback.
     """
-    MASTER ROUTER
-
-    1. Try GROQ
-    2. Fallback to Ollama
-    3. Safe fallback
-    """
-
-    if not prompt:
+    if not prompt or not prompt.strip():
         return "No prompt provided"
 
-    # 🔵 TRY GROQ FIRST
+    # 1️⃣ TRY GROQ (PRIMARY CLOUD INSTANCE)
     groq_response = call_groq(prompt)
-
     if groq_response and len(groq_response) > 5:
         return groq_response
 
-    logger.warning("⚠ Groq failed → switching to Ollama")
+    logger.warning("⚠ Groq cloud inference failed or is unavailable → routing to local Ollama.")
 
-    # 🟢 TRY OLLAMA
+    # 2️⃣ TRY OLLAMA (SECURE OFFLINE FALLBACK)
     local_response = call_ollama(prompt)
-
     if local_response and len(local_response) > 5:
         return local_response
 
-    # 🔴 FINAL SAFE FALLBACK
-    logger.error("❌ Groq + Ollama both failed")
+    # 3️⃣ FINAL SECURE FALLBACK
+    logger.error("❌ Groq cloud and local Ollama both failed. Executing deterministic fallback.")
 
     if role in ["summary", "report"]:
-        return "Final report unavailable. Please retry."
+        return "Final report summary is currently unavailable. Please check backend LLM logs."
 
-    return "Analysis unavailable. Please retry."
+    return "Contract analysis context unavailable. Please review connection parameters and retry."

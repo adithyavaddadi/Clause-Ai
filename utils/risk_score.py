@@ -1,86 +1,88 @@
 """
-Risk scoring utilities for ClauseAI (FINAL PRODUCTION VERSION)
+Risk scoring utilities for ClauseAI (PRODUCTION VERSION)
 Used by:
-- final_report
-- executor agent
-- fallback mode
+- final_report.py
+- executor_agent.py
+- Heuristic fallback managers
 """
 
 import re
 from typing import Dict, List, Tuple
 
+# =========================================================
+# KEYWORDS & SIGNALS CONFIGURATION
+# =========================================================
+HIGH_RISK_KEYWORDS = [
+    "unlimited liability",
+    "unlimited indemn",
+    "perpetual",
+    "irrevocable",
+    "liquidated damages",
+    "sole discretion",
+    "waive",
+]
+
+MEDIUM_RISK_KEYWORDS = [
+    "termination",
+    "breach",
+    "penalty",
+    "interest",
+    "indemnity",
+    "confidential",
+    "non-compete",
+    "non solicitation",
+    "assignment",
+    "auto-renew",
+]
+
+PROTECTIVE_KEYWORDS = [
+    "liability cap",
+    "limited liability",
+    "governing law",
+    "arbitration",
+    "notice period",
+    "data protection",
+    "encrypted",
+    "backup",
+]
+
 
 # =========================================================
 # MAIN RISK SCORE CALCULATOR
 # =========================================================
-def calculate_risk_score(contract_text: str, analysis_results: Dict = None) -> Tuple[str, int]:
-    """
-    Calculate overall contract risk score.
-
+def calculate_risk_score(contract_text: str, analysis_results: Dict | None = None) -> Tuple[str, int]:
+    """Calculates a deterministic contract risk rating based on semantic token matches.
+    
+    Args:
+        contract_text (str): Raw contract text corpus.
+        analysis_results (Dict | None): Optional agent outputs.
+        
     Returns:
-        (risk_level, risk_percentage)
+        Tuple[str, int]: The risk level classification ("Low", "Medium", "High") and the numerical score (5–100).
     """
-
     if not contract_text or not isinstance(contract_text, str):
         return "Low", 25
 
     text_lower = contract_text.lower()
-    score = 35  # balanced base score
+    score = 35  # Base score for balanced agreements
 
-    # ---------------- HIGH RISK ----------------
-    high_risk_keywords = [
-        "unlimited liability",
-        "unlimited indemn",
-        "perpetual",
-        "irrevocable",
-        "liquidated damages",
-        "sole discretion",
-        "waive",
-    ]
-
-    # ---------------- MEDIUM ----------------
-    medium_risk_keywords = [
-        "termination",
-        "breach",
-        "penalty",
-        "interest",
-        "indemnity",
-        "confidential",
-        "non-compete",
-        "non solicitation",
-        "assignment",
-        "auto-renew",
-    ]
-
-    # ---------------- PROTECTION ----------------
-    protective_keywords = [
-        "liability cap",
-        "limited liability",
-        "governing law",
-        "arbitration",
-        "notice period",
-        "data protection",
-        "encrypted",
-        "backup",
-    ]
-
-    # ---------- APPLY SCORING ----------
-    for word in high_risk_keywords:
+    # Apply scoring weights based on keywords
+    for word in HIGH_RISK_KEYWORDS:
         if _contains_term(text_lower, word):
             score += 15
 
-    for word in medium_risk_keywords:
+    for word in MEDIUM_RISK_KEYWORDS:
         if _contains_term(text_lower, word):
             score += 6
 
-    for word in protective_keywords:
+    for word in PROTECTIVE_KEYWORDS:
         if _contains_term(text_lower, word):
             score -= 5
 
-    # clamp score
+    # Clamp the final risk rating
     score = max(5, min(score, 100))
 
-    # ---------- LEVEL ----------
+    # Determine risk category boundaries
     if score >= 70:
         level = "High"
     elif score >= 40:
@@ -95,22 +97,29 @@ def calculate_risk_score(contract_text: str, analysis_results: Dict = None) -> T
 # EXTRACT RISK FACTORS
 # =========================================================
 def extract_risk_factors(contract_text: str) -> List[Dict[str, str]]:
-    """Extract key risk signals from contract"""
-
+    """Extracts key risk signals and outputs their severity levels.
+    
+    Args:
+        contract_text (str): Contract text corpus.
+        
+    Returns:
+        List[Dict[str, str]]: Array of matched risk factors.
+    """
     if not contract_text or not isinstance(contract_text, str):
         return []
 
     text = contract_text.lower()
     factors: List[Dict[str, str]] = []
 
+    # Map patterns to their description and severity levels
     patterns = [
-        (r"unlimited\s+liability", "High", "Unlimited liability exposure"),
-        (r"indemnif", "High", "Indemnification obligation"),
-        (r"liquidated\s+damages", "Medium", "Liquidated damages clause"),
-        (r"penalty", "Medium", "Penalty clause"),
-        (r"sole\s+discretion", "Medium", "Sole discretion clause"),
-        (r"perpetual", "High", "Perpetual obligation"),
-        (r"auto.?renew", "Medium", "Auto renewal risk"),
+        (r"unlimited\s+liability", "High", "Unlimited liability exposure detected"),
+        (r"indemnif", "High", "Active indemnification obligation"),
+        (r"liquidated\s+damages", "Medium", "Liquidated damages enforcement clause"),
+        (r"penalty", "Medium", "Monetary penalty clause"),
+        (r"sole\s+discretion", "Medium", "Unilateral sole discretion clause"),
+        (r"perpetual", "High", "Perpetual duration obligation"),
+        (r"auto.?renew", "Medium", "Automatic auto-renewal clause"),
     ]
 
     for pattern, severity, desc in patterns:
@@ -126,9 +135,16 @@ def extract_risk_factors(contract_text: str) -> List[Dict[str, str]]:
 # =========================================================
 # COMPARE TWO CONTRACTS
 # =========================================================
-def compare_risk_scores(text1: str, text2: str) -> Dict:
-    """Compare risk between two contracts"""
-
+def compare_risk_scores(text1: str, text2: str) -> Dict[str, Dict[str, str | int] | int | str]:
+    """Compares risk profiles between two contracts.
+    
+    Args:
+        text1 (str): First contract text corpus.
+        text2 (str): Second contract text corpus.
+        
+    Returns:
+        Dict: Structured comparison results.
+    """
     level1, score1 = calculate_risk_score(text1 or "")
     level2, score2 = calculate_risk_score(text2 or "")
 
@@ -144,12 +160,18 @@ def compare_risk_scores(text1: str, text2: str) -> Dict:
 # SAFE TERM DETECTOR
 # =========================================================
 def _contains_term(text_lower: str, keyword: str) -> bool:
+    """Verifies existence of keyword while avoiding semantic negations.
+    
+    Example:
+        'no unlimited liability' will NOT trigger a match.
+        
+    Args:
+        text_lower (str): Lowercase contract text corpus.
+        keyword (str): The keyword token to search.
+        
+    Returns:
+        bool: True if matched without any negations, False otherwise.
     """
-    Detect keyword but avoid negation:
-    'no unlimited liability'
-    'not auto-renew'
-    """
-
     if not text_lower:
         return False
 
@@ -159,8 +181,8 @@ def _contains_term(text_lower: str, keyword: str) -> bool:
         start = max(0, match.start() - 25)
         prefix = text_lower[start:match.start()]
 
-        # avoid negation context
-        if any(x in prefix for x in ["no ", "not ", "without ", "absence of "]):
+        # Ignore occurrence if negated within pre-existing 25-character boundary
+        if any(neg in prefix for neg in ["no ", "not ", "without ", "absence of "]):
             continue
 
         return True
@@ -169,19 +191,19 @@ def _contains_term(text_lower: str, keyword: str) -> bool:
 
 
 # =========================================================
-# TEST MODE
+# LOCAL VERIFICATION RUNNER
 # =========================================================
 if __name__ == "__main__":
-    test = """
+    test_context = """
     This agreement includes unlimited liability and indemnity.
     Liquidated damages apply.
     Governing law is India.
     """
 
-    level, score = calculate_risk_score(test)
+    level, calculated_score = calculate_risk_score(test_context)
     print("Risk Level:", level)
-    print("Risk Score:", score)
+    print("Risk Score:", calculated_score)
 
     print("\nRisk Factors:")
-    for f in extract_risk_factors(test):
+    for f in extract_risk_factors(test_context):
         print("-", f["description"])
